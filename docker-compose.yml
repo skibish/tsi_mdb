@@ -1,0 +1,13 @@
+version: '2'
+services:
+  mongo:
+    image: mongo
+    command: ["--storageEngine", "wiredTiger"]
+  server:
+    image: node
+    volumes:
+      - .:/app
+    depends_on:
+      - mongo
+    working_dir: /app
+    command: ["node", "keepup.js"]

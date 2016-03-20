@@ -7,7 +7,9 @@ services:
     image: node
     volumes:
       - .:/app
+    ports:
+      - 9000:8080
     depends_on:
       - mongo
     working_dir: /app
-    command: ["node", "keepup.js"]
+    command: ["npm", "start"]

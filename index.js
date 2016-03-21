@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const AnonymousUserController = require('./app/controllers/anonymousUserController');
+const RegisteredUserController = require('./app/controllers/registeredUserController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -19,7 +20,7 @@ router.get('/', (req, res) => {
   res.json({message: 'It works!'});
 });
 
-// route for AnonymousUser
+// routes for AnonymousUser
 router.route('/user/anonymous')
   .post(AnonymousUserController.create)
   .get(AnonymousUserController.index);
@@ -28,6 +29,16 @@ router.route('/user/anonymous/:id')
   .get(AnonymousUserController.show)
   .put(AnonymousUserController.update)
   .delete(AnonymousUserController.destroy);
+
+// routes for RegisteredUser
+router.route('/user/registered')
+  .post(RegisteredUserController.create)
+  .get(RegisteredUserController.index);
+
+router.route('/user/registered/:id')
+  .get(RegisteredUserController.show)
+  .put(RegisteredUserController.update)
+  .delete(RegisteredUserController.destroy);
 
 app.use('/api', router);
 

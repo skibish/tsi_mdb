@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 
 const AnonymousUserController = require('./app/controllers/anonymousUserController');
 const RegisteredUserController = require('./app/controllers/registeredUserController');
+const PaymentController = require('./app/controllers/paymentController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -39,6 +40,15 @@ router.route('/user/registered/:id')
   .get(RegisteredUserController.show)
   .put(RegisteredUserController.update)
   .delete(RegisteredUserController.destroy);
+
+// routes for Payment
+router.route('/payment')
+  .post(PaymentController.create)
+  .get(RegisteredUserController.index);
+
+router.route('/payment/:id')
+  .get(PaymentController.show)
+  .put(PaymentController.update);
 
 app.use('/api', router);
 

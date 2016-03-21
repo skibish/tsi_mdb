@@ -3,9 +3,9 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const mongoose   = require('mongoose');
+const mongoose = require('mongoose');
 
-const AnonymousUser = require('./app/models/anonymousUser');
+const AnonymousUserController = require('./app/controllers/anonymousUserController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -16,32 +16,18 @@ const port = process.env.PORT || '8080';
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.json({message: 'It works!'});
+  res.json({message: 'It works!'});
 });
 
 // route for AnonymousUser
 router.route('/user/anonymous')
-    .post((req, res) => {
-        let aUser = new AnonymousUser();
-        aUser.birthday = new Date(req.body.birthday);
+  .post(AnonymousUserController.create)
+  .get(AnonymousUserController.index);
 
-        aUser.save(err => {
-            if (err) {
-                res.send(err);
-            }
-
-            res.json({message: 'Anonymous user created!'});
-        });
-    })
-    .get((req, res) => {
-        AnonymousUser.find((err, auser) => {
-            if (err) {
-                return console.error(err);
-            }
-
-            res.json(auser);
-        });
-    });
+router.route('/user/anonymous/:id')
+  .get(AnonymousUserController.show)
+  .put(AnonymousUserController.update)
+  .delete(AnonymousUserController.destroy);
 
 app.use('/api', router);
 

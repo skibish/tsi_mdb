@@ -55,7 +55,8 @@ router.route('/payment')
 
 router.route('/payment/:id')
   .get(PaymentController.show)
-  .put(PaymentController.update);
+  .put(PaymentController.update)
+  .delete(PaymentController.destroy);
 
 // routes for Ticket
 router.route('/ticket')
@@ -64,7 +65,8 @@ router.route('/ticket')
 
 router.route('/ticket/:id')
   .get(TicketController.show)
-  .put(TicketController.update);
+  .put(TicketController.update)
+  .delete(TicketController.destroy);
 
 // routes for Price
 router.route('/price')
@@ -73,7 +75,8 @@ router.route('/price')
 
 router.route('/price/:id')
   .get(PriceController.show)
-  .put(PriceController.update);
+  .put(PriceController.update)
+  .delete(PriceController.destroy);
 
 // routes for Session
 router.route('/session')
@@ -82,7 +85,8 @@ router.route('/session')
 
 router.route('/session/:id')
   .get(SessionController.show)
-  .put(SessionController.update);
+  .put(SessionController.update)
+  .delete(SessionController.destroy);
 
 // routes for Movie
 router.route('/movie')
@@ -91,7 +95,8 @@ router.route('/movie')
 
 router.route('/movie/:id')
   .get(MovieController.show)
-  .put(MovieController.update);
+  .put(MovieController.update)
+  .delete(MovieController.destroy);
 
 // routes for Auditorium
 router.route('/auditorium')
@@ -100,7 +105,8 @@ router.route('/auditorium')
 
 router.route('/auditorium/:id')
   .get(AuditoriumController.show)
-  .put(AuditoriumController.update);
+  .put(AuditoriumController.update)
+  .delete(AuditoriumController.destroy);
 
 // routes for RowSeat
 router.route('/rowseat')
@@ -109,7 +115,8 @@ router.route('/rowseat')
 
 router.route('/rowseat/:id')
   .get(RowSeatController.show)
-  .put(RowSeatController.update);
+  .put(RowSeatController.update)
+  .delete(RowSeatController.destroy);
 
 app.use('/api', router);
 

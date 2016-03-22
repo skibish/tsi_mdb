@@ -9,6 +9,7 @@ const AnonymousUserController = require('./app/controllers/anonymousUserControll
 const RegisteredUserController = require('./app/controllers/registeredUserController');
 const PaymentController = require('./app/controllers/paymentController');
 const TicketController = require('./app/controllers/ticketController');
+const PriceController = require('./app/controllers/priceController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -59,6 +60,15 @@ router.route('/ticket')
 router.route('/ticket/:id')
   .get(TicketController.show)
   .put(TicketController.update);
+
+// routes for Price
+router.route('/price')
+  .post(PriceController.create)
+  .get(PriceController.index);
+
+router.route('/price/:id')
+  .get(PriceController.show)
+  .put(PriceController.update);
 
 app.use('/api', router);
 

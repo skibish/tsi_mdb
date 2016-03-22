@@ -13,6 +13,7 @@ const PriceController = require('./app/controllers/priceController');
 const TypeController = require('./app/controllers/typeController');
 const SessionController = require('./app/controllers/sessionController');
 const MovieController = require('./app/controllers/movieController');
+const AuditoriumController = require('./app/controllers/auditoriumController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -82,14 +83,23 @@ router.route('/session/:id')
   .get(SessionController.show)
   .put(SessionController.update);
 
-// routes for Session
-router.route('/session')
-  .post(SessionController.create)
-  .get(SessionController.index);
+// routes for Movie
+router.route('/movie')
+  .post(MovieController.create)
+  .get(MovieController.index);
 
-router.route('/session/:id')
-  .get(SessionController.show)
-  .put(SessionController.update);
+router.route('/movie/:id')
+  .get(MovieController.show)
+  .put(Movieontroller.update);
+
+// routes for Auditorium
+router.route('/auditorium')
+  .post(AuditoriumController.create)
+  .get(AuditoriumController.index);
+
+router.route('/auditorium/:id')
+  .get(AuditoriumController.show)
+  .put(AuditoriumController.update);
 
 app.use('/api', router);
 

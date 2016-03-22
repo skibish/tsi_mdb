@@ -14,6 +14,7 @@ const TypeController = require('./app/controllers/typeController');
 const SessionController = require('./app/controllers/sessionController');
 const MovieController = require('./app/controllers/movieController');
 const AuditoriumController = require('./app/controllers/auditoriumController');
+const RowSeatController = require('./app/controllers/rowSeatController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -90,7 +91,7 @@ router.route('/movie')
 
 router.route('/movie/:id')
   .get(MovieController.show)
-  .put(Movieontroller.update);
+  .put(MovieController.update);
 
 // routes for Auditorium
 router.route('/auditorium')
@@ -100,6 +101,15 @@ router.route('/auditorium')
 router.route('/auditorium/:id')
   .get(AuditoriumController.show)
   .put(AuditoriumController.update);
+
+// routes for RowSeat
+router.route('/rowseat')
+  .post(RowSeatController.create)
+  .get(RowSeatController.index);
+
+router.route('/rowseat/:id')
+  .get(RowSeatController.show)
+  .put(RowSeatController.update);
 
 app.use('/api', router);
 

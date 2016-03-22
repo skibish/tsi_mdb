@@ -12,6 +12,7 @@ const TicketController = require('./app/controllers/ticketController');
 const PriceController = require('./app/controllers/priceController');
 const TypeController = require('./app/controllers/typeController');
 const SessionController = require('./app/controllers/sessionController');
+const MovieController = require('./app/controllers/movieController');
 
 mongoose.connect('mongodb://mongo/cinema');
 
@@ -71,6 +72,15 @@ router.route('/price')
 router.route('/price/:id')
   .get(PriceController.show)
   .put(PriceController.update);
+
+// routes for Session
+router.route('/session')
+  .post(SessionController.create)
+  .get(SessionController.index);
+
+router.route('/session/:id')
+  .get(SessionController.show)
+  .put(SessionController.update);
 
 // routes for Session
 router.route('/session')

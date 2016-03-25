@@ -55,8 +55,7 @@ router.route('/payment')
 
 router.route('/payment/:id')
   .get(PaymentController.show)
-  .put(PaymentController.update)
-  .delete(PaymentController.destroy);
+  .put(PaymentController.update);
 
 // routes for Ticket
 router.route('/ticket')
@@ -65,8 +64,7 @@ router.route('/ticket')
 
 router.route('/ticket/:id')
   .get(TicketController.show)
-  .put(TicketController.update)
-  .delete(TicketController.destroy);
+  .put(TicketController.update);
 
 // routes for Price
 router.route('/price')

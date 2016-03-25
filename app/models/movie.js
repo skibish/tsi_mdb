@@ -19,7 +19,7 @@ const MovieSchema = new Schema({
   },
   title: String,
   description: String,
-  length: Number
+  length: Number // in minutes
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);

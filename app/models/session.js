@@ -11,7 +11,7 @@ const SessionSchema = new Schema({
   },
   dt_created: {
     type: Date,
-    default: new Date()
+    default: new Date(),
   },
   dt_updated: {
     type: Date,
@@ -19,7 +19,8 @@ const SessionSchema = new Schema({
   },
   auditorium_id: Schema.Types.ObjectId,
   movie_id: Schema.Types.ObjectId,
-  dt_start: Date
+  dt_start: Date,
+  dt_finish: Date,
 });
 
 module.exports = mongoose.model('Session', SessionSchema);

@@ -1,6 +1,7 @@
 'use strict';
 
 const Session = require('../models/session');
+const Helper = require('../helpers');
 
 const SessionController = {
 
@@ -30,7 +31,18 @@ const SessionController = {
    * @return {void}
    */
   index: function(req, res) {
-    Session.find({is_deleted: false}, (err, found) => {
+    if (req.query.from === undefined || req.query.to === undefined) {
+      return res.status(400).json({"message": "Dates must be specified with `from` and `to`."});
+    }
+
+    let dtFrom = new Date(req.query.from);
+    let dtTo = new Date(req.query.to);
+
+    if (! (Helper.isDateValid(dtFrom) && Helper.isDateValid(dtTo)) ) {
+      return res.status(400).json({"message": "Bad dates format, check."});
+    }
+
+    Session.find({is_deleted: false, dt_start: {"$gte": dtFrom}, dt_finish: {"$lte": dtTo}}, (err, found) => {
       if (err) {
         res.send(err);
       }

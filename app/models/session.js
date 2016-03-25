@@ -21,6 +21,7 @@ const SessionSchema = new Schema({
   movie_id: Schema.Types.ObjectId,
   dt_start: Date,
   dt_finish: Date,
+  seats: Schema.Types.Mixed,
 });
 
 module.exports = mongoose.model('Session', SessionSchema);

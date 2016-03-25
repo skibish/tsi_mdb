@@ -17,13 +17,27 @@ const SessionController = {
     let session = new Session();
     session = Object.assign(session, req.body);
 
-    session.save(err => {
+    Auditorium.findById(req.body.auditorium_id, (err, foundA) => {
       if (err) {
         res.send(err);
       }
-    });
 
-    res.json({message: 'Session created!', id: session._id});
+      // generate map of seats and their availability status
+      let mapOfSeats = {};
+      foundA.seats.forEach((v,i,a) => {
+        mapOfSeats[v] = true;
+      });
+
+      session.seats = mapOfSeats;
+
+      session.save(err => {
+        if (err) {
+          res.send(err);
+        }
+
+        res.json({message: 'Session created!', id: session._id});
+      });
+    });
   },
 
   /**
@@ -66,41 +80,7 @@ const SessionController = {
         res.send(err);
       }
 
-      // if nothing found, answer with it
-      if (!foundS.length) {
-        res.json(foundS);
-      }
-
-      // search for auditorium
-      Auditorium.findById(foundS[0].auditorium_id, (err, foundA) => {
-        if (err) {
-          res.send(err);
-        }
-
-        // generate map of seats and their availability status
-        let mapOfSeats = {};
-        foundA.seats.forEach((v,i,a) => {
-          mapOfSeats[v] = true;
-        });
-
-        // find all tickets for current session
-        Ticket.find({session_id: req.params.id}, (err, foundT) => {
-          if (err) {
-            res.send(err);
-          }
-
-          // mark seats, that are already bought
-          foundT.forEach((v,i,a) => {
-            if (mapOfSeats.hasOwnProperty(v.row_seat_id)) {
-              mapOfSeats[v.row_seat_id] = false;
-            }
-          });
-          let objResponse = Object.assign(foundS[0].toObject(), {seats: mapOfSeats})
-
-          res.json(objResponse);
-        });
-
-      });
+      res.json(foundS);
     });
   },
 

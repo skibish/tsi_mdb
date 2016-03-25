@@ -11,16 +11,16 @@ const TicketController = {
    * @return {void}
    */
   create: function(req, res) {
-    let payment = new Ticket();
-    payment = Object.assign(payment, req.body);
+    let ticket = new Ticket();
+    ticket = Object.assign(ticket, req.body);
 
-    payment.save(err => {
+    ticket.save(err => {
       if (err) {
         res.send(err);
       }
-    });
 
-    res.json({message: 'Ticket created!', id: payment._id});
+      res.json({message: 'Ticket created!', id: ticket._id});
+    });
   },
 
   /**

@@ -1,6 +1,8 @@
 'use strict';
 
 const Session = require('../models/session');
+const Auditorium = require('../models/auditorium');
+const Ticket = require('../models/ticket');
 const Helper = require('../helpers');
 
 const SessionController = {
@@ -58,12 +60,47 @@ const SessionController = {
    * @return {void}
    */
   show: function(req, res) {
-    Session.find({_id: req.params.id, is_deleted: false}, (err, found) => {
+    // seach for asked session
+    Session.find({_id: req.params.id, is_deleted: false}, (err, foundS) => {
       if (err) {
         res.send(err);
       }
 
-      res.json(found);
+      // if nothing found, answer with it
+      if (!foundS.length) {
+        res.json(foundS);
+      }
+
+      // search for auditorium
+      Auditorium.findById(foundS[0].auditorium_id, (err, foundA) => {
+        if (err) {
+          res.send(err);
+        }
+
+        // generate map of seats and their availability status
+        let mapOfSeats = {};
+        foundA.seats.forEach((v,i,a) => {
+          mapOfSeats[v] = true;
+        });
+
+        // find all tickets for current session
+        Ticket.find({session_id: req.params.id}, (err, foundT) => {
+          if (err) {
+            res.send(err);
+          }
+
+          // mark seats, that are already bought
+          foundT.forEach((v,i,a) => {
+            if (mapOfSeats.hasOwnProperty(v.row_seat_id)) {
+              mapOfSeats[v.row_seat_id] = false;
+            }
+          });
+          let objResponse = Object.assign(foundS[0].toObject(), {seats: mapOfSeats})
+
+          res.json(objResponse);
+        });
+
+      });
     });
   },
 

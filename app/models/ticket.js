@@ -13,7 +13,7 @@ const TicketSchema = new Schema({
     default: new Date('1999-01-01')
   },
   session_id: Schema.Types.ObjectId,
-  row_seat_id: Schema.Types.ObjectId,
+  row_seat_id: String,
   price_id: Schema.Types.ObjectId
 });
 

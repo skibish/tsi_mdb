@@ -3,6 +3,7 @@
 const Payment = require('../models/payment');
 const RegisteredUser = require('../models/registeredUser');
 const Session = require('../models/session');
+const Price = require('../models/price');
 
 const PaymentController = {
 
@@ -17,91 +18,110 @@ const PaymentController = {
     let payment = new Payment();
     payment = Object.assign(payment, req.body);
 
-    // find user
-    RegisteredUser.findById(req.body.user_id, (err, foundU) => {
-      if (err) {
-        res.send(err);
-      }
+    let listOfSessionIDs = [];
+    let mapOfSessionIdToSeats = {};
+    let cleaned = {};
+    let errors = [];
+    let ticketCount = 0;
+    let discount = 0;
 
+    RegisteredUser.findById(req.body.user_id).exec()
+    .then(foundU => {
       // if not found, return error
       if (foundU === null) {
-        res.status(400).json({message: "User not correct"});
+        let msg = "User not correct";
+        res.status(400).json({message: msg});
+        throw new Error(msg);
       }
 
+      console.log("U===>", foundU);
+      discount = foundU.discount;
+
+    })
+    .then(() => {
       // if `sessions` id not array - return error
       if (! Array.isArray(req.body.sessions)) {
-        res.status(400).json({message: "sessions must be array"});
+        let msg = "sessions must be array";
+        res.status(400).json({message: msg});
+        throw new Error(msq);
       }
 
       // collect map {session_id: ["1:1", ...]}
-      let mapOfSessionIdToSeats = {};
       req.body.sessions.forEach((e, i , a) => {
         mapOfSessionIdToSeats[e.session_id] = e.seats;
       });
 
       // try to find all asked sessions
-      let listOfSessionIDs = Object.keys(mapOfSessionIdToSeats);
-      Session.find({'_id': {$in: listOfSessionIDs}}, (err, foundS) => {
-        if (err) {
-          res.send(err);
-        }
+      listOfSessionIDs = Object.keys(mapOfSessionIdToSeats);
 
-        // if size of found and asked differs, return error
-        if (foundS.length !== listOfSessionIDs.length) {
-          res.status(400).json({message: "Not all sessions found"});
-        }
+      return Session.find({'_id': {$in: listOfSessionIDs}}).exec();
+    })
+    .then(foundS => {
+      // if size of found and asked differs, return error
+      if (foundS.length !== listOfSessionIDs.length) {
+        let msg = "Not all sessions found";
+        res.status(400).json({message: msg});
+      }
 
-        // from what found form structure {session_id: {"1:1": true, ...}}
-        let cleaned = {};
-        foundS.forEach((e, i , a) => {
-          cleaned[e._id] = e.seats;
-        });
-
-        // iterate through all and validate, that asked places are available
-        let errors = [];
-        for (let key in mapOfSessionIdToSeats) {
-          for (let i = 0; i < mapOfSessionIdToSeats[key].length; i++) {
-            if (cleaned[key].hasOwnProperty(mapOfSessionIdToSeats[key][i]) && !cleaned[key][mapOfSessionIdToSeats[key][i]]) {
-              // if not available, collect
-              errors.push({"session_id": key, "seat": mapOfSessionIdToSeats[key][i]});
-            }
-          }
-        }
-
-        // if there are not available places, return error
-        if (errors.length) {
-          res.status(400).json({message: "Following seats are taken", data: errors});
-        }
-
-        // Update sessions seats
-        let ticketCount = 0;
-        for (let key in mapOfSessionIdToSeats) {
-          for (let i = 0; i < mapOfSessionIdToSeats[key].length; i++) {
-            cleaned[key][mapOfSessionIdToSeats[key][i]] = false;
-            ticketCount++;
-          }
-
-          Session.findByIdAndUpdate(key, { $set: {"seats": cleaned[key]} }, (err, updatedS) => {
-            if (err) {
-              res.send(err);
-            }
-          });
-        }
-
-        // mark payment status as reserved
-        payment.status = "reserved";
-        // TODO: calculate amount
-
-        // and save it
-        payment.save(err => {
-          if (err) {
-            res.send(err);
-          }
-
-          res.json({message: 'Payment reserved!', id: payment._id});
-        });
+      // from what found form structure {session_id: {"1:1": true, ...}}
+      foundS.forEach((e, i , a) => {
+        cleaned[e._id] = e.seats;
       });
+    })
+    .then(() => {
+      // iterate through all and validate, that asked places are available
+      for (let key in mapOfSessionIdToSeats) {
+        for (let i = 0; i < mapOfSessionIdToSeats[key].length; i++) {
+          if (cleaned[key].hasOwnProperty(mapOfSessionIdToSeats[key][i]) && !cleaned[key][mapOfSessionIdToSeats[key][i]]) {
+            // if not available, collect
+            errors.push({"session_id": key, "seat": mapOfSessionIdToSeats[key][i]});
+          }
+        }
+      }
+
+      // if there are not available places, return error
+      if (errors.length) {
+        let msg = "Following seats are taken";
+        res.status(400).json({message: msg, data: errors});
+        throw new Error(msg);
+      }
+
+      // Update sessions seats
+      for (let key in mapOfSessionIdToSeats) {
+        for (let i = 0; i < mapOfSessionIdToSeats[key].length; i++) {
+          cleaned[key][mapOfSessionIdToSeats[key][i]] = false;
+          ticketCount++;
+        }
+
+        Session.findByIdAndUpdate(key, { $set: {"seats": cleaned[key]} }).exec()
+        .catch(err => {
+          throw new Error(err);
+        });
+      }
+
+      return Price.findOne({type: req.body.payment.price_type}).exec();
+    })
+    .then(foundP => {
+      if (foundP === null) {
+        let msg = "Price type not found";
+        res.status(400).json({message: msg});
+        throw new Error(msg);
+      }
+
+      // mark payment status as reserved
+      payment.status = "reserved";
+      let total = ticketCount * foundP.amount;
+      payment.full_price = total - (discount * total);
+
+      return payment.save();
+    })
+    .then((payment) => {
+      res.json({message: 'Payment reserved!', id: payment._id});
+    })
+    .catch(err => {
+      console.log("E===>", err);
     });
+
   },
 
   /**

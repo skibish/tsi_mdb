@@ -16,6 +16,7 @@ const MovieController = require('./app/controllers/movieController');
 const AuditoriumController = require('./app/controllers/auditoriumController');
 const RowSeatController = require('./app/controllers/rowSeatController');
 
+mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://mongo/cinema');
 
 app.use(bodyParser.urlencoded({ extended: true }));

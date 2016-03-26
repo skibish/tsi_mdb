@@ -30,7 +30,7 @@ const RegisteredUserSchema = new Schema({
   },
   card_number: String,
   payment_ids: [Schema.Types.ObjectId],
-  discount: Number
+  discount: Number // 0, 0.3, 0.25
 });
 
 module.exports = mongoose.model('RegisteredUser', RegisteredUserSchema);

@@ -18,7 +18,7 @@ const PriceSchema = new Schema({
     default: new Date('1999-01-01')
   },
   amount: Number,
-  type_id: Schema.Types.ObjectId
+  type: String,
 });
 
 module.exports = mongoose.model('Price', PriceSchema);

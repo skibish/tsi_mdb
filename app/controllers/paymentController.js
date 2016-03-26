@@ -25,6 +25,7 @@ const PaymentController = {
     let errors = [];
     let ticketCount = 0;
     let discount = 0;
+    let currentUser;
 
     User.findById(req.body.user_id).exec()
     .then(foundU => {
@@ -35,6 +36,7 @@ const PaymentController = {
         throw new Error(msg);
       }
 
+      currentUser = foundU;
       discount = foundU.discount;
 
     })
@@ -137,6 +139,9 @@ const PaymentController = {
     })
     .then((payment) => {
       res.json({message: 'Payment reserved!', id: payment._id});
+    }).then(() => {
+      currentUser.payment_ids.push(payment._id);
+      return currentUser.save();
     })
     .catch(err => {
       console.log("E===>", err);

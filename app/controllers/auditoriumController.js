@@ -1,6 +1,6 @@
 'use strict';
 
-const Auditorium = require('../models/auditorium');
+const Auditorium = require("../models/auditorium");
 
 const AuditoriumController = {
 
@@ -14,13 +14,14 @@ const AuditoriumController = {
     let auditorium = new Auditorium();
     auditorium = Object.assign(auditorium, req.body);
 
-    auditorium.save(err => {
-      if (err) {
-        res.send(err);
-      }
+    auditorium.save()
+    .then(auditorium => {
+      res.json({message: "Auditorium created!", id: auditorium._id});
+    })
+    .catch(err => {
+      res.send(err);
     });
 
-    res.json({message: 'Auditorium created!', id: auditorium._id});
   },
 
   /**
@@ -30,12 +31,12 @@ const AuditoriumController = {
    * @return {void}
    */
   index: function(req, res) {
-    Auditorium.find({is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Auditorium.find({is_deleted: false}).exec()
+    .then(auditoriums => {
+      res.json(auditoriums);
+    })
+    .catch(err => {
+      res.send(err);
     });
   },
 
@@ -46,12 +47,12 @@ const AuditoriumController = {
    * @return {void}
    */
   show: function(req, res) {
-    Auditorium.find({_id: req.params.id, is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Auditorium.findOne({_id: req.params.id, is_deleted: false}).exec()
+    .then(auditorium => {
+      res.json(auditorium);
+    })
+    .catch(err => {
+      res.send(err);
     });
   },
 
@@ -62,21 +63,19 @@ const AuditoriumController = {
    * @return {void}
    */
   destroy: function(req, res) {
-    Auditorium.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
+    Auditorium.findById(req.params.id).exec()
+    .then(auditorium => {
       found.is_deleted = true;
       found.dt_updated = new Date();
 
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
+      return auditorium.save();
+    })
+    .then(auditorium => {
+      res.json({message: "Auditorium deleted!"});
 
-        res.json({message: 'Auditorium deleted!'});
-      });
+    })
+    .catch(err => {
+      res.send(err);
     });
   },
 
@@ -87,21 +86,18 @@ const AuditoriumController = {
    * @return {void}
    */
   update: function(req, res) {
-    Auditorium.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      found = Object.assign(found, req.body);
+    Auditorium.findById(req.params.id).exec()
+    .then(auditorium => {
+      auditorium = Object.assign(auditorium, req.body);
       found.dt_updated = new Date();
 
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Auditorium updated!'});
-      });
+      auditorium.save();
+    })
+    .then(auditorium => {
+      res.json({message: "Auditorium updated!"});
+    })
+    .catch(err => {
+      res.send(err);
     });
   }
 

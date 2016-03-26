@@ -3,7 +3,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const RegisteredUserSchema = new Schema({
+const UserSchema = new Schema({
   birthday: Date,
   is_deleted: {
     type: Boolean,
@@ -30,7 +30,8 @@ const RegisteredUserSchema = new Schema({
   },
   card_number: String,
   payment_ids: [Schema.Types.ObjectId],
-  discount: Number // 0, 0.3, 0.25
+  discount: Number, // 0, 0.3, 0.25,
+  type: {type: String, enum: ["anonymous", "registered"]}
 });
 
-module.exports = mongoose.model('RegisteredUser', RegisteredUserSchema);
+module.exports = mongoose.model('User', UserSchema);

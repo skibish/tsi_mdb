@@ -1,26 +1,26 @@
 'use strict';
 
-const AnonymousUser = require('../models/anonymousUser');
+const User = require('../models/user');
 
-const AnonymousUserController = {
+const UserController = {
 
   /**
-   * Create new anonymous user
+   * Create new registered user
    * @param  {Object} req Request object
    * @param  {Object} res Response object
    * @return {void}
    */
   create: function(req, res) {
-    let anonymousUser = new AnonymousUser();
-    anonymousUser.birthday = new Date(req.body.birthday);
+    let registeredUser = new User();
+    registeredUser = Object.assign(registeredUser, req.body);
 
-    anonymousUser.save(err => {
+    registeredUser.save(err => {
       if (err) {
         res.send(err);
       }
     });
 
-    res.json({message: 'Anonymous user created!', id: anonymousUser._id});
+    res.json({message: 'User created!', id: registeredUser._id});
   },
 
   /**
@@ -30,23 +30,7 @@ const AnonymousUserController = {
    * @return {void}
    */
   index: function(req, res) {
-    AnonymousUser.find({is_deleted: false}, (err, auser) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(auser);
-    });
-  },
-
-  /**
-   * Show anonymous user by ID
-   * @param  {Object} req Request object
-   * @param  {Object} res Response object
-   * @return {void}
-   */
-  show: function(req, res) {
-    AnonymousUser.find({_id: req.params.id, is_deleted: false}, (err, found) => {
+    User.find({is_deleted: false}, (err, found) => {
       if (err) {
         res.send(err);
       }
@@ -56,13 +40,29 @@ const AnonymousUserController = {
   },
 
   /**
-   * Soft delete anonymous user
+   * Show registered user by ID
+   * @param  {Object} req Request object
+   * @param  {Object} res Response object
+   * @return {void}
+   */
+  show: function(req, res) {
+    User.find({_id: req.params.id, is_deleted: false}, (err, found) => {
+      if (err) {
+        res.send(err);
+      }
+
+      res.json(found);
+    });
+  },
+
+  /**
+   * Soft delete registered user
    * @param  {Object} req Request object
    * @param  {Object} res Response object
    * @return {void}
    */
   destroy: function(req, res) {
-    AnonymousUser.findById(req.params.id, (err, found) => {
+    User.findById(req.params.id, (err, found) => {
       if (err) {
         res.send(err);
       }
@@ -75,37 +75,36 @@ const AnonymousUserController = {
           res.send(err);
         }
 
-        res.json({message: 'Anonymous user deleted!'});
+        res.json({message: 'User deleted!'});
       });
     });
   },
 
   /**
-   * Update anonymous user
+   * Update registered user
    * @param  {Object} req Request object
    * @param  {Object} res Response object
    * @return {void}
    */
   update: function(req, res) {
-    AnonymousUser.findById(req.params.id, (err, found) => {
+    User.findById(req.params.id, (err, found) => {
       if (err) {
         res.send(err);
       }
 
-      if (req.body.hasOwnProperty('birthday')) {
-        found.birthday = new Date(req.body.birthday);
-      }
+      found = Object.assign(found, req.body);
+      found.dt_updated = new Date();
 
       found.save(err => {
         if (err) {
           res.send(err);
         }
 
-        res.json({message: 'Anonymous user updated!'});
+        res.json({message: 'User updated!'});
       });
     });
   }
 
 }
 
-module.exports = AnonymousUserController;
+module.exports = UserController;

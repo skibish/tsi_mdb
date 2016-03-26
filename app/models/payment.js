@@ -13,7 +13,10 @@ const PaymentSchema = new Schema({
     default: new Date('1999-01-01')
   },
   full_price: Number,
-  status: String,
+  status: {
+    type: String,
+    enum: ["success", "fail"]
+  },
   tickets: [Schema.Types.ObjectId]
 });
 

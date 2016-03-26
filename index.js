@@ -1,20 +1,18 @@
 'use strict';
 
-const express = require('express');
-const app = express();
+const express    = require('express');
+const app        = express();
 const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const mongoose   = require('mongoose');
 
-const AnonymousUserController = require('./app/controllers/anonymousUserController');
-const RegisteredUserController = require('./app/controllers/registeredUserController');
-const PaymentController = require('./app/controllers/paymentController');
-const TicketController = require('./app/controllers/ticketController');
-const PriceController = require('./app/controllers/priceController');
-const TypeController = require('./app/controllers/typeController');
-const SessionController = require('./app/controllers/sessionController');
-const MovieController = require('./app/controllers/movieController');
+const UserController       = require('./app/controllers/userController');
+const PaymentController    = require('./app/controllers/paymentController');
+const TicketController     = require('./app/controllers/ticketController');
+const PriceController      = require('./app/controllers/priceController');
+const TypeController       = require('./app/controllers/typeController');
+const SessionController    = require('./app/controllers/sessionController');
+const MovieController      = require('./app/controllers/movieController');
 const AuditoriumController = require('./app/controllers/auditoriumController');
-const RowSeatController = require('./app/controllers/rowSeatController');
 
 mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://mongo/cinema');
@@ -29,25 +27,15 @@ router.get('/', (req, res) => {
   res.json({message: 'It works!'});
 });
 
-// routes for AnonymousUser
-router.route('/user/anonymous')
-  .post(AnonymousUserController.create)
-  .get(AnonymousUserController.index);
+// routes for User
+router.route('/user')
+  .post(UserController.create)
+  .get(UserController.index);
 
-router.route('/user/anonymous/:id')
-  .get(AnonymousUserController.show)
-  .put(AnonymousUserController.update)
-  .delete(AnonymousUserController.destroy);
-
-// routes for RegisteredUser
-router.route('/user/registered')
-  .post(RegisteredUserController.create)
-  .get(RegisteredUserController.index);
-
-router.route('/user/registered/:id')
-  .get(RegisteredUserController.show)
-  .put(RegisteredUserController.update)
-  .delete(RegisteredUserController.destroy);
+router.route('/user/:id')
+  .get(UserController.show)
+  .put(UserController.update)
+  .delete(UserController.destroy);
 
 // routes for Payment
 router.route('/payment')
@@ -106,16 +94,6 @@ router.route('/auditorium/:id')
   .get(AuditoriumController.show)
   .put(AuditoriumController.update)
   .delete(AuditoriumController.destroy);
-
-// routes for RowSeat
-router.route('/rowseat')
-  .post(RowSeatController.create)
-  .get(RowSeatController.index);
-
-router.route('/rowseat/:id')
-  .get(RowSeatController.show)
-  .put(RowSeatController.update)
-  .delete(RowSeatController.destroy);
 
 app.use('/api', router);
 

@@ -1,7 +1,7 @@
 'use strict';
 
 const Payment = require('../models/payment');
-const RegisteredUser = require('../models/registeredUser');
+const User = require('../models/user');
 const Session = require('../models/session');
 const Price = require('../models/price');
 const Ticket = require('../models/ticket');
@@ -26,7 +26,7 @@ const PaymentController = {
     let ticketCount = 0;
     let discount = 0;
 
-    RegisteredUser.findById(req.body.user_id).exec()
+    User.findById(req.body.user_id).exec()
     .then(foundU => {
       // if not found, return error
       if (foundU === null) {

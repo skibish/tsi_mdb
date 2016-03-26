@@ -1,6 +1,6 @@
 'use strict';
 
-const Movie = require('../models/movie');
+const Movie = require("../models/movie");
 
 const MovieController = {
 
@@ -14,13 +14,14 @@ const MovieController = {
     let movie = new Movie();
     movie = Object.assign(movie, req.body);
 
-    movie.save(err => {
-      if (err) {
-        res.send(err);
-      }
-    });
+    movie.save()
+    .then(movie => {
+      res.json({message: "Movie created!", id: movie._id});
 
-    res.json({message: 'Movie created!', id: movie._id});
+    })
+    .catch(err => {
+      res.send(err);
+    });
   },
 
   /**
@@ -30,13 +31,13 @@ const MovieController = {
    * @return {void}
    */
   index: function(req, res) {
-    Movie.find({is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
-    });
+    Movie.find({is_deleted: false}).exec()
+    .then(movies => {
+      res.json(movies);
+    })
+    .catch(err => {
+      res.send(err);
+    })
   },
 
   /**
@@ -46,12 +47,11 @@ const MovieController = {
    * @return {void}
    */
   show: function(req, res) {
-    Movie.find({_id: req.params.id, is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Movie.findOne({_id: req.params.id, is_deleted: false}).exec()
+    .then(movie => {
+      res.json(movie);
+    }).catch(err => {
+      res.send(err);
     });
   },
 
@@ -62,21 +62,18 @@ const MovieController = {
    * @return {void}
    */
   destroy: function(req, res) {
-    Movie.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Movie.findById(req.params.id).exec()
+    .then(movie => {
+      movie.is_deleted = true;
+      movie.dt_updated = new Date();
 
-      found.is_deleted = true;
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Movie deleted!'});
-      });
+      return movie.save();
+    })
+    .then(movie => {
+      res.json({message: "Movie deleted!"});
+    })
+    .catch(err => {
+      res.send(err);
     });
   },
 
@@ -87,24 +84,20 @@ const MovieController = {
    * @return {void}
    */
   update: function(req, res) {
-    Movie.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Movie.findById(req.params.id).exec()
+    .then(movie => {
+      movie = Object.assign(movie, req.body);
+      movie.dt_updated = new Date();
 
-      found = Object.assign(found, req.body);
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Movie updated!'});
-      });
+      return movie.save();
+    })
+    .then(movie => {
+      res.json({message: "Movie updated!"});
+    })
+    .catch(err => {
+      res.send(err);
     });
   }
-
 }
 
 module.exports = MovieController;

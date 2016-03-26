@@ -4,6 +4,7 @@ const Payment = require('../models/payment');
 const RegisteredUser = require('../models/registeredUser');
 const Session = require('../models/session');
 const Price = require('../models/price');
+const Ticket = require('../models/ticket');
 
 const PaymentController = {
 
@@ -34,7 +35,6 @@ const PaymentController = {
         throw new Error(msg);
       }
 
-      console.log("U===>", foundU);
       discount = foundU.discount;
 
     })
@@ -108,10 +108,30 @@ const PaymentController = {
         throw new Error(msg);
       }
 
-      // mark payment status as reserved
-      payment.status = "reserved";
+      // TODO: some heavy processing here
+
+      // mark payment status as success or fail
+      payment.status = "success";
       let total = ticketCount * foundP.amount;
       payment.full_price = total - (discount * total);
+
+      // iterate over session => seats
+      for (let key in mapOfSessionIdToSeats) {
+        for (let i = 0; i < mapOfSessionIdToSeats[key].length; i++) {
+          let ticket = new Ticket({
+            session_id: key,
+            row_seat_id: mapOfSessionIdToSeats[key][i],
+            price_id: foundP._id
+          });
+          // add to payment
+          payment.tickets.push(ticket._id);
+
+          ticket.save()
+          .catch(err => {
+            throw new Error(err);
+          });
+        }
+      }
 
       return payment.save();
     })

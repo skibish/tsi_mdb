@@ -1,9 +1,10 @@
 'use strict';
 
-const Session = require('../models/session');
-const Auditorium = require('../models/auditorium');
-const Ticket = require('../models/ticket');
-const Helper = require('../helpers');
+const Session      = require("../models/session");
+const Auditorium   = require("../models/auditorium");
+const Ticket       = require("../models/ticket");
+const Helper       = require("../helpers");
+const AppException = require("../exceptions/appException");
 
 const SessionController = {
 
@@ -17,26 +18,30 @@ const SessionController = {
     let session = new Session();
     session = Object.assign(session, req.body);
 
-    Auditorium.findById(req.body.auditorium_id, (err, foundA) => {
-      if (err) {
-        res.send(err);
+    Auditorium.findById(req.body.auditorium_id).exec()
+    .then(auditorium => {
+      if (auditorium === null) {
+        throw new AppException("Auditorium not found.", 400);
       }
-
       // generate map of seats and their availability status
       let mapOfSeats = {};
-      foundA.seats.forEach((v,i,a) => {
+      auditorium.seats.forEach((e,i,a) => {
         mapOfSeats[v] = true;
       });
 
       session.seats = mapOfSeats;
 
-      session.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Session created!', id: session._id});
-      });
+      return session.save();
+    })
+    .then(session => {
+      res.json({message: "Session created!", id: session._id});
+    })
+    .catch(err => {
+      if (err.name === "AppException") {
+        res.status(err.status).json({message: err.message});
+      } else {
+        res.status(500).send(err);
+      }
     });
   },
 
@@ -47,24 +52,32 @@ const SessionController = {
    * @return {void}
    */
   index: function(req, res) {
-    if (req.query.from === undefined || req.query.to === undefined) {
-      return res.status(400).json({"message": "Dates must be specified with `from` and `to`."});
-    }
-
-    let dtFrom = new Date(req.query.from);
-    let dtTo = new Date(req.query.to);
-
-    if (! (Helper.isDateValid(dtFrom) && Helper.isDateValid(dtTo)) ) {
-      return res.status(400).json({"message": "Bad dates format, check."});
-    }
-
-    Session.find({is_deleted: false, dt_start: {"$gte": dtFrom}, dt_finish: {"$lte": dtTo}}, (err, found) => {
-      if (err) {
-        res.send(err);
+    try {
+      if (req.query.from === undefined || req.query.to === undefined) {
+        throw new AppException("Dates must be specified with `from` and `to`.", 400);
       }
 
-      res.json(found);
-    });
+      let dtFrom = new Date(req.query.from);
+      let dtTo = new Date(req.query.to);
+
+      if (! (Helper.isDateValid(dtFrom) && Helper.isDateValid(dtTo)) ) {
+        throw new AppException("Bad dates format, check.", 400);
+      }
+
+      Session.find({is_deleted: false, dt_start: {"$gte": dtFrom}, dt_finish: {"$lte": dtTo}}).exec()
+      .then(sessions => {
+        res.json(sessions);
+      })
+      .catch(err => {
+        throw new Error(err);
+      });
+    } catch (e) {
+      if (e.name === "AppException") {
+        res.status(e.status).json({message: e.message});
+      } else {
+        res.status(500).send(e);
+      }
+    }
   },
 
   /**
@@ -75,12 +88,12 @@ const SessionController = {
    */
   show: function(req, res) {
     // seach for asked session
-    Session.find({_id: req.params.id, is_deleted: false}, (err, foundS) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(foundS);
+    Session.findOne({_id: req.params.id, is_deleted: false}).exec()
+    .then(session => {
+      res.json(session);
+    })
+    .catch(err => {
+      res.send(err);
     });
   },
 
@@ -91,21 +104,18 @@ const SessionController = {
    * @return {void}
    */
   destroy: function(req, res) {
-    Session.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Session.findById(req.params.id).exec()
+    .then(session => {
+      session.is_deleted = true;
+      session.dt_updated = new Date();
 
-      found.is_deleted = true;
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Session deleted!'});
-      });
+      return session.save();
+    })
+    .then(session => {
+      res.json({message: "Session deleted!"});
+    })
+    .catch(err => {
+      res.send(err);
     });
   },
 
@@ -116,21 +126,18 @@ const SessionController = {
    * @return {void}
    */
   update: function(req, res) {
-    Session.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Session.findById(req.params.id).exec()
+    .then(session => {
+      session = Object.assign(session, req.body);
+      session.dt_updated = new Date();
 
-      found = Object.assign(found, req.body);
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Session updated!'});
-      });
+      return session.save();
+    })
+    .then(session => {
+      res.json({message: "Session updated!"});
+    })
+    .catch(err => {
+      res.send(err);
     });
   }
 

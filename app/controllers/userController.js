@@ -1,6 +1,6 @@
 'use strict';
 
-const User = require('../models/user');
+const User = require("../models/user");
 
 const UserController = {
 
@@ -11,16 +11,16 @@ const UserController = {
    * @return {void}
    */
   create: function(req, res) {
-    let registeredUser = new User();
-    registeredUser = Object.assign(registeredUser, req.body);
+    let user = new User();
+    user = Object.assign(user, req.body);
+    use.save()
+    .then(user => {
+      res.json({message: "User created!", id: user._id});
 
-    registeredUser.save(err => {
-      if (err) {
-        res.send(err);
-      }
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
-
-    res.json({message: 'User created!', id: registeredUser._id});
   },
 
   /**
@@ -30,12 +30,12 @@ const UserController = {
    * @return {void}
    */
   index: function(req, res) {
-    User.find({is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    User.find({is_deleted: false}).exec()
+    .then(users => {
+      res.json(users);
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -46,12 +46,11 @@ const UserController = {
    * @return {void}
    */
   show: function(req, res) {
-    User.find({_id: req.params.id, is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    User.findOne({_id: req.params.id, is_deleted: false}).exec()
+    .then(user => {
+      res.json(user);
+    }).catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -62,21 +61,18 @@ const UserController = {
    * @return {void}
    */
   destroy: function(req, res) {
-    User.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    User.findById(req.params.id).exec()
+    .then(user => {
+      user.is_deleted = true;
+      user.dt_updated = new Date();
 
-      found.is_deleted = true;
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'User deleted!'});
-      });
+      return user.save();
+    })
+    .then(user => {
+      res.json({message: "User deleted!"});
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -87,22 +83,20 @@ const UserController = {
    * @return {void}
    */
   update: function(req, res) {
-    User.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    User.findById(req.params.id).exec()
+    .then(user => {
+      user = Object.assign(user, req.body);
+      user.dt_updated = new Date();
 
-      found = Object.assign(found, req.body);
-      found.dt_updated = new Date();
+      return user.save();
+    })
+    .then(user => {
+      res.json({message: "User updated!"});
 
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'User updated!'});
-      });
-    });
+    })
+    .catch(err => {
+      res.status(500).send(err);
+    });m
   }
 
 }

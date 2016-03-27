@@ -19,7 +19,7 @@ const AuditoriumController = {
       res.json({message: "Auditorium created!", id: auditorium._id});
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
 
   },
@@ -36,7 +36,7 @@ const AuditoriumController = {
       res.json(auditoriums);
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   },
 
@@ -52,7 +52,7 @@ const AuditoriumController = {
       res.json(auditorium);
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   },
 
@@ -75,7 +75,7 @@ const AuditoriumController = {
 
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   },
 
@@ -97,7 +97,7 @@ const AuditoriumController = {
       res.json({message: "Auditorium updated!"});
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   }
 

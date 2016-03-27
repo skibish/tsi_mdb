@@ -20,7 +20,7 @@ const MovieController = {
 
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   },
 
@@ -36,7 +36,7 @@ const MovieController = {
       res.json(movies);
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     })
   },
 
@@ -51,7 +51,7 @@ const MovieController = {
     .then(movie => {
       res.json(movie);
     }).catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   },
 
@@ -73,7 +73,7 @@ const MovieController = {
       res.json({message: "Movie deleted!"});
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   },
 
@@ -95,7 +95,7 @@ const MovieController = {
       res.json({message: "Movie updated!"});
     })
     .catch(err => {
-      res.send(err);
+      res.status(500).send(err);
     });
   }
 }

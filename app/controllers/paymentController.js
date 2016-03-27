@@ -137,7 +137,7 @@ const PaymentController = {
       return payment.save();
     })
     .then((payment) => {
-      res.json({message: "Payment reserved!", id: payment._id});
+      res.json({message: "Payment done!", id: payment._id});
     }).then(() => {
       currentUser.payment_ids.push(payment._id);
       return currentUser.save();
@@ -208,8 +208,54 @@ const PaymentController = {
     .catch(err => {
       res.status(500).send(err);
     });
-  }
+  },
 
+  /**
+   * Print tickets and total price for asked payment
+   * @param  {Object} req Request object
+   * @param  {Object} res Response object
+   * @return {void}
+   */
+  print: function(req, res) {
+    let printObj = {
+      total: 0,
+      tickets: []
+    };
+    let sessionsMap = {};
+    let allTickets = [];
+
+    Payment.findById(req.params.id).exec()
+    .then(payment => {
+      printObj.total = payment.full_price;
+      return Ticket.find({_id: {$in: payment.tickets} }).exec();
+    })
+    .then(tickets => {
+      allTickets = tickets;
+      let sessions = tickets.map(t => t.session_id);
+      return Session.find({_id: {$in: sessions} }).populate("auditorium_id movie_id").exec();
+    })
+    .then(sessions => {
+      sessions.forEach((e, i, a) => {
+        sessionsMap[e._id] = {
+          movie: e.movie_id.title,
+          start: e.dt_start,
+          auditorium: e.auditorium_id.name,
+          seat: ""
+        }
+      });
+
+      allTickets.forEach((e, i, a) => {
+        let t = Object.assign({}, sessionsMap[e.session_id]);
+        t.seat = e.row_seat_id;
+        printObj.tickets.push(t);
+      });
+
+      res.json(printObj);
+    })
+    .catch(err => {
+      res.status(500).send(err);
+    });
+  }
 }
 
 module.exports = PaymentController;

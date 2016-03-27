@@ -45,6 +45,9 @@ router.route("/payment/:id")
   .get(PaymentController.show)
   .put(PaymentController.update);
 
+router.route("/payment/:id/print")
+  .get(PaymentController.print);
+
 // routes for Ticket
 router.route("/ticket")
   .post(TicketController.create)

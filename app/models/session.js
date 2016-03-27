@@ -17,8 +17,8 @@ const SessionSchema = new Schema({
     type: Date,
     default: new Date('1999-01-01')
   },
-  auditorium_id: Schema.Types.ObjectId,
-  movie_id: Schema.Types.ObjectId,
+  auditorium_id: {type: Schema.Types.ObjectId, ref: 'Auditorium'},
+  movie_id: {type: Schema.Types.ObjectId, ref: 'Movie'},
   dt_start: Date,
   dt_finish: Date,
   seats: Schema.Types.Mixed,

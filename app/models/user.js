@@ -31,7 +31,14 @@ const UserSchema = new Schema({
   card_number: String,
   payment_ids: [Schema.Types.ObjectId],
   discount: Number, // 0, 0.3, 0.25,
-  type: {type: String, enum: ["anonymous", "registered"]}
+  type: {
+    type: String,
+    enum: [
+      "anonymous",
+      "registered"
+    ],
+    required: true
+  }
 });
 
 module.exports = mongoose.model('User', UserSchema);

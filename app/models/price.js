@@ -17,9 +17,21 @@ const PriceSchema = new Schema({
     type: Date,
     default: new Date('1999-01-01')
   },
-  amount: Number,
-  type: String,
-  description: String,
+  amount: {
+    type: Number,
+    required: true
+  },
+  type: {
+    type: String,
+    required: true,
+    index: {
+      unique: true
+    }
+  },
+  description: {
+    type: String,
+    required: true
+  },
 });
 
 module.exports = mongoose.model('Price', PriceSchema);

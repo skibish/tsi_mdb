@@ -17,8 +17,8 @@ const AuditoriumSchema = new Schema({
     type: Date,
     default: new Date('1999-01-01')
   },
-  name: String,
-  seats: [String]
+  name: {type: String, required: true},
+  seats: {type: [String], required: true}
 });
 
 module.exports = mongoose.model('Auditorium', AuditoriumSchema);

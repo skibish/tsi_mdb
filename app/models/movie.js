@@ -17,9 +17,18 @@ const MovieSchema = new Schema({
     type: Date,
     default: new Date('1999-01-01')
   },
-  title: String,
-  description: String,
-  length: Number // in minutes
+  title: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  length: {
+    type: Number, // in minutes
+    required: true
+  }
 });
 
 module.exports = mongoose.model('Movie', MovieSchema);

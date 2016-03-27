@@ -17,11 +17,28 @@ const SessionSchema = new Schema({
     type: Date,
     default: new Date('1999-01-01')
   },
-  auditorium_id: {type: Schema.Types.ObjectId, ref: 'Auditorium'},
-  movie_id: {type: Schema.Types.ObjectId, ref: 'Movie'},
-  dt_start: Date,
-  dt_finish: Date,
-  seats: Schema.Types.Mixed,
+  auditorium_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Auditorium',
+    required: true
+  },
+  movie_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Movie',
+    required: true
+  },
+  dt_start: {
+    type: Date,
+    required: true
+  },
+  dt_finish: {
+    type: Date,
+    required: true
+  },
+  seats: {
+    type: Schema.Types.Mixed,
+    required: true
+  },
 });
 
 module.exports = mongoose.model('Session', SessionSchema);

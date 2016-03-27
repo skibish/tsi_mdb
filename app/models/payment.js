@@ -12,12 +12,22 @@ const PaymentSchema = new Schema({
     type: Date,
     default: new Date('1999-01-01')
   },
-  full_price: Number,
+  full_price: {
+    type: Number,
+    required: true
+  },
   status: {
     type: String,
-    enum: ["success", "fail"]
+    enum: [
+      "success",
+      "fail"
+    ],
+    required: true
   },
-  tickets: [Schema.Types.ObjectId]
+  tickets: {
+    type: [Schema.Types.ObjectId],
+    required: true
+  }
 });
 
 module.exports = mongoose.model('Payment', PaymentSchema);

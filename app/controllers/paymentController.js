@@ -27,8 +27,19 @@ const PaymentController = {
     let ticketCount = 0;
     let discount = 0;
     let currentUser;
+    let amount = 0;
+    let priceID = "";
 
-    User.findById(req.body.user_id).exec()
+    Price.findOne({type: req.body.payment.price_type}).exec()
+    .then((foundP) => {
+      if (foundP === null) {
+        throw new AppException("Price type not found", 400);
+      }
+      amount = foundP.amount;
+      priceID = foundP._id;
+
+      return User.findById(req.body.user_id).exec();
+    })
     .then(foundU => {
       // if not found, return error
       if (foundU === null) {
@@ -36,7 +47,9 @@ const PaymentController = {
       }
 
       currentUser = foundU;
-      discount = foundU.discount;
+      if (foundU.discount) {
+        discount = foundU.discount;
+      }
 
     })
     .then(() => {
@@ -94,19 +107,13 @@ const PaymentController = {
           throw new Error(err);
         });
       }
-
-      return Price.findOne({type: req.body.payment.price_type}).exec();
     })
-    .then(foundP => {
-      if (foundP === null) {
-        throw new AppException("Price type not found", 400);
-      }
-
+    .then(() => {
       // TODO: some heavy processing here
 
       // mark payment status as success or fail
       payment.status = "success";
-      let total = ticketCount * foundP.amount;
+      let total = ticketCount * amount;
       payment.full_price = total - (discount * total);
 
       // iterate over session => seats
@@ -115,7 +122,7 @@ const PaymentController = {
           let ticket = new Ticket({
             session_id: key,
             row_seat_id: mapOfSessionIdToSeats[key][i],
-            price_id: foundP._id
+            price_id: priceID
           });
           // add to payment
           payment.tickets.push(ticket._id);

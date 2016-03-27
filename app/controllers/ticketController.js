@@ -29,7 +29,7 @@ const TicketController = {
    * @return {void}
    */
   index: function(req, res) {
-    Ticket.findO({is_deleted: false}).exec()
+    Ticket.findOne({is_deleted: false}).exec()
     .then(tickets => {
       res.json(tickets);
     })

@@ -13,7 +13,7 @@ const UserController = {
   create: function(req, res) {
     let user = new User();
     user = Object.assign(user, req.body);
-    use.save()
+    user.save()
     .then(user => {
       res.json({message: "User created!", id: user._id});
 

@@ -11,6 +11,7 @@ mongoose.Promise = require("bluebird");
 mongoose.connect("mongodb://mongo/cinema");
 
 let seatsArray = [];
+let seatsObj = {};
 let movieDocuments = [];
 let auditoriumDocuments = [];
 let sessionDocuments = [];
@@ -21,6 +22,10 @@ for (let i = 1; i <= 20; i++) {
   for (let j = 1; j <= 20; j++) {
     seatsArray.push(`${i}:${j}`);
   }
+}
+
+for (let i = 0; i < seatsArray.length; i++) {
+  seatsObj[seatsArray[i]] = true;
 }
 
 // 1. Generate movies, auditories and sessions
@@ -52,6 +57,7 @@ for (let i = 0; i < 100; i++) {
     movie_id: m._id,
     dt_start: dtStart,
     dt_finish: dtFinish,
+    seats: seatsObj,
   });
 
   // add data to array
@@ -65,7 +71,7 @@ for (let i = 0; i < 3; i++) {
   let p = new Price({
     amount: Faker.finance.amount(3, 12),
     type: Faker.lorem.word(),
-    description: Faker.lorem.paragraph
+    description: Faker.lorem.paragraph()
   });
 
   priceDocuments.push(p);

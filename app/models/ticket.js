@@ -4,6 +4,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const TicketSchema = new Schema({
+  is_deleted: {
+    type: Boolean,
+    default: false,
+    select: false,
+  },
   dt_created: {
     type: Date,
     default: new Date()

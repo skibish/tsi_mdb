@@ -1,6 +1,6 @@
 'use strict';
 
-const Ticket = require('../models/ticket');
+const Ticket = require("../models/ticket");
 
 const TicketController = {
 
@@ -13,13 +13,12 @@ const TicketController = {
   create: function(req, res) {
     let ticket = new Ticket();
     ticket = Object.assign(ticket, req.body);
-
-    ticket.save(err => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json({message: 'Ticket created!', id: ticket._id});
+    ticket.save()
+    .then(ticket => {
+      res.json({message: "Ticket created!", id: ticket._id});
+    })
+    .catch(err => {
+      res.status(500).res.send(err);
     });
   },
 
@@ -30,12 +29,12 @@ const TicketController = {
    * @return {void}
    */
   index: function(req, res) {
-    Ticket.find((err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Ticket.findO({is_deleted: false}).exec()
+    .then(tickets => {
+      res.json(tickets);
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -46,12 +45,34 @@ const TicketController = {
    * @return {void}
    */
   show: function(req, res) {
-    Ticket.find({_id: req.params.id}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Ticket.find({_id: req.params.id, is_deleted: false}).exec()
+    .then(ticket => {
+      res.json(ticket);
+    })
+    .catch(err => {
+      res.status(500).send(err);
+    });
+  },
 
-      res.json(found);
+  /**
+   * Soft delete ticket
+   * @param  {Object} req Request object
+   * @param  {Object} res Response object
+   * @return {void}
+   */
+  destroy: function(req, res) {
+    Ticket.findById(req.params.id).exec()
+    .then(ticket => {
+      ticket.is_deleted = true;
+      ticket.dt_updated = new Date();
+
+      return ticket.save();
+
+    }).then(ticket => {
+      res.json({message: "Ticket deleted!"});
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -62,21 +83,19 @@ const TicketController = {
    * @return {void}
    */
   update: function(req, res) {
-    Ticket.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Ticket.findById(req.params.id).exec()
+    .then(ticket => {
+      ticket = Object.assign(ticket, req.body);
+      ticket.dt_updated = new Date();
 
-      found = Object.assign(found, req.body);
-      found.dt_updated = new Date();
+      return ticket.save()
+    })
+    .then(ticket => {
+      res.json({message: "Ticket user updated!"});
 
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Ticket user updated!'});
-      });
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   }
 

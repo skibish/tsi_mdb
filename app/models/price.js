@@ -19,6 +19,7 @@ const PriceSchema = new Schema({
   },
   amount: Number,
   type: String,
+  description: String,
 });
 
 module.exports = mongoose.model('Price', PriceSchema);

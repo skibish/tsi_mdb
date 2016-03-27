@@ -1,6 +1,6 @@
 'use strict';
 
-const Price = require('../models/price');
+const Price = require("../models/price");
 
 const PriceController = {
 
@@ -13,14 +13,13 @@ const PriceController = {
   create: function(req, res) {
     let price = new Price();
     price = Object.assign(price, req.body);
-
-    price.save(err => {
-      if (err) {
-        res.send(err);
-      }
+    price.save()
+    .then(price => {
+      res.json({message: "Price created!", id: price._id});
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
-
-    res.json({message: 'Price created!', id: price._id});
   },
 
   /**
@@ -30,12 +29,12 @@ const PriceController = {
    * @return {void}
    */
   index: function(req, res) {
-    Price.find({is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Price.find({is_deleted: false}).exec()
+    .then(prices => {
+      res.json(prices);
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -46,12 +45,12 @@ const PriceController = {
    * @return {void}
    */
   show: function(req, res) {
-    Price.find({_id: req.params.id, is_deleted: false}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Price.findOne({_id: req.params.id, is_deleted: false}).exec()
+    .then(price => {
+      res.json(price);
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -62,21 +61,18 @@ const PriceController = {
    * @return {void}
    */
   destroy: function(req, res) {
-    Price.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Price.findById(req.params.id).exec()
+    .then(price => {
+      price.is_deleted = true;
+      price.dt_updated = new Date();
 
-      found.is_deleted = true;
-      found.dt_updated = new Date();
+      return price.save();
 
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Price deleted!'});
-      });
+    }).then(price => {
+      res.json({message: "Price deleted!"});
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -87,21 +83,18 @@ const PriceController = {
    * @return {void}
    */
   update: function(req, res) {
-    Price.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Price.findById(req.params.id).exec()
+    .then(price => {
+      price = Object.assign(price, req.body);
+      price.dt_updated = new Date();
 
-      found = Object.assign(found, req.body);
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Price updated!'});
-      });
+      return price.save();
+    })
+    .then(price => {
+      res.json({message: "Price updated!"});
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   }
 

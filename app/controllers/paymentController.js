@@ -1,10 +1,11 @@
 'use strict';
 
-const Payment = require('../models/payment');
-const User = require('../models/user');
-const Session = require('../models/session');
-const Price = require('../models/price');
-const Ticket = require('../models/ticket');
+const Payment = require("../models/payment");
+const User = require("../models/user");
+const Session = require("../models/session");
+const Price = require("../models/price");
+const Ticket = require("../models/ticket");
+const AppException = require("../exceptions/appException");
 
 const PaymentController = {
 
@@ -31,9 +32,7 @@ const PaymentController = {
     .then(foundU => {
       // if not found, return error
       if (foundU === null) {
-        let msg = "User not correct";
-        res.status(400).json({message: msg});
-        throw new Error(msg);
+        throw new AppException("User not correct", 400);
       }
 
       currentUser = foundU;
@@ -43,9 +42,7 @@ const PaymentController = {
     .then(() => {
       // if `sessions` id not array - return error
       if (! Array.isArray(req.body.sessions)) {
-        let msg = "sessions must be array";
-        res.status(400).json({message: msg});
-        throw new Error(msq);
+        throw new AppException("sessions must be array", 400);
       }
 
       // collect map {session_id: ["1:1", ...]}
@@ -61,8 +58,7 @@ const PaymentController = {
     .then(foundS => {
       // if size of found and asked differs, return error
       if (foundS.length !== listOfSessionIDs.length) {
-        let msg = "Not all sessions found";
-        res.status(400).json({message: msg});
+        throw new AppException("Not all sessions found", 400);
       }
 
       // from what found form structure {session_id: {"1:1": true, ...}}
@@ -83,9 +79,7 @@ const PaymentController = {
 
       // if there are not available places, return error
       if (errors.length) {
-        let msg = "Following seats are taken";
-        res.status(400).json({message: msg, data: errors});
-        throw new Error(msg);
+        throw new AppException("Following seats are taken", 400, errors);
       }
 
       // Update sessions seats
@@ -105,9 +99,7 @@ const PaymentController = {
     })
     .then(foundP => {
       if (foundP === null) {
-        let msg = "Price type not found";
-        res.status(400).json({message: msg});
-        throw new Error(msg);
+        throw new AppException("Price type not found", 400);
       }
 
       // TODO: some heavy processing here
@@ -138,13 +130,21 @@ const PaymentController = {
       return payment.save();
     })
     .then((payment) => {
-      res.json({message: 'Payment reserved!', id: payment._id});
+      res.json({message: "Payment reserved!", id: payment._id});
     }).then(() => {
       currentUser.payment_ids.push(payment._id);
       return currentUser.save();
     })
     .catch(err => {
-      console.log("E===>", err);
+      if (err.name === "AppException") {
+        if (err.data != null) {
+          res.status(err.status).json({message: err.message, data: err.data});
+        } else {
+          res.status(err.status).json({message: err.message});
+        }
+      } else {
+        res.status(500).send(err);
+      }
     });
 
   },
@@ -156,12 +156,12 @@ const PaymentController = {
    * @return {void}
    */
   index: function(req, res) {
-    Payment.find((err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Payment.find({}).exec()
+    .then(payments => {
+      res.json(payments);
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -172,12 +172,12 @@ const PaymentController = {
    * @return {void}
    */
   show: function(req, res) {
-    Payment.find({_id: req.params.id}, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
-
-      res.json(found);
+    Payment.find({_id: req.params.id}).exec()
+    .then(payment => {
+      res.json(payment);
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   },
 
@@ -188,21 +188,18 @@ const PaymentController = {
    * @return {void}
    */
   update: function(req, res) {
-    Payment.findById(req.params.id, (err, found) => {
-      if (err) {
-        res.send(err);
-      }
+    Payment.findById(req.params.id).exec()
+    .then(payment => {
+      payment = Object.assign(payment, req.body);
+      payment.dt_updated = new Date();
 
-      found = Object.assign(found, req.body);
-      found.dt_updated = new Date();
-
-      found.save(err => {
-        if (err) {
-          res.send(err);
-        }
-
-        res.json({message: 'Payment user updated!'});
-      });
+      return payment.save();
+    })
+    .then(payment => {
+      res.json({message: "Payment user updated!"});
+    })
+    .catch(err => {
+      res.status(500).send(err);
     });
   }
 

@@ -1,7 +1,10 @@
-function AppException(message, status) {
+'use strict';
+
+function AppException(message, status, data) {
   this.name = "AppException";
   this.message = (message || "");
-  this.status = status;
+  this.status = (status || 500);
+  this.data = (data || null);
 }
 
 AppException.prototype = new Error();

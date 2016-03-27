@@ -1,76 +1,87 @@
-'use strict';
+"use strict";
 
-const Faker = require('faker');
-const mongoose = require('mongoose');
-const Session = require('./app/models/session');
-const Movie = require('./app/models/movie');
-const Auditorium = require('./app/models/auditorium');
+const Faker      = require("faker");
+const mongoose   = require("mongoose");
+const Session    = require("./app/models/session");
+const Movie      = require("./app/models/movie");
+const Price      = require("./app/models/price");
+const Auditorium = require("./app/models/auditorium");
 
-mongoose.connect('mongodb://mongo/cinema');
+mongoose.Promise = require("bluebird");
+mongoose.connect("mongodb://mongo/cinema");
 
-// 1. Generate movies
-let movieIds = [];
+let seatsArray = [];
+let movieDocuments = [];
+let auditoriumDocuments = [];
+let sessionDocuments = [];
+let priceDocuments = [];
+
+// 1. generate 20x20 seat ids
+for (let i = 1; i <= 20; i++) {
+  for (let j = 1; j <= 20; j++) {
+    seatsArray.push(`${i}:${j}`);
+  }
+}
+
+// 1. Generate movies, auditories and sessions
 for (let i = 0; i < 100; i++) {
-  let m = new Movie();
-  m = Object.assign(m, {
+
+  // create movie
+  let m = new Movie({
     title: Faker.lorem.words(),
     description: Faker.lorem.paragraph(),
     length: Faker.random.number({min: 45, max: 125}),
   });
 
-  m.save(err => {
-    if (err) {
-      console.log(err);
-      return
-    }
-  });
-
-  movieIds.push({id: m._id, length: m.length});
-}
-
-// 2. add auditories
-let auditoryIds = [];
-
-for (let i = 0; i < 100; i++) {
-  let a = new Auditorium();
-
-  a = Object.assign(a, {
+  // create auditorium
+  let a = new Auditorium({
     name: Faker.lorem.words(),
-    // seats: []
+    seats: seatsArray
   });
 
-  a.save(err => {
-    if (err) {
-      console.log(err);
-      return
-    }
-  });
-
-  auditoryIds.push(a._id);
-}
-
-// 3. generate sessions
-for (let i = 0; i < 100; i++) {
+  // create session
   let s = new Session();
 
-  let dtStart = Faker.date.between(new Date('2016-01-01'), new Date('2016-12-31'));
+  let dtStart = Faker.date.between(new Date("2016-01-01"), new Date("2016-12-31"));
   let dtFinish = new Date(dtStart);
 
-  dtFinish.setMinutes(dtStart.getMinutes() + movieIds[i].length);
+  dtFinish.setMinutes(dtStart.getMinutes() + m.length);
 
-  s = Object.assign(s, {
-    auditorium_id: auditoryIds[i],
-    movie_id: movieIds[i].id,
+  s = new Session({
+    auditorium_id: a._id,
+    movie_id: m._id,
     dt_start: dtStart,
     dt_finish: dtFinish,
   });
 
-  s.save(err => {
-    if (err) {
-      console.log(err);
-      return
-    }
+  // add data to array
+  movieDocuments.push(m);
+  auditoriumDocuments.push(a);
+  sessionDocuments.push(s);
+}
+
+// 2. generate prices
+for (let i = 0; i < 3; i++) {
+  let p = new Price({
+    amount: Faker.finance.amount(3, 12),
+    type: Faker.lorem.word(),
+    description: Faker.lorem.paragraph
   });
 
-  console.log("generated session: ", i)
+  priceDocuments.push(p);
 }
+
+
+// 3. run inserts
+Movie.insertMany(movieDocuments)
+.then(() => Auditorium.insertMany(auditoriumDocuments))
+.then(() => Session.insertMany(sessionDocuments))
+.then(() => Price.insertMany(priceDocuments))
+.then(() => {
+  mongoose.disconnect(() => {
+    console.log("Data generated!");
+  });
+})
+.catch(err => {
+  console.log(err);
+});

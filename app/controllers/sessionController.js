@@ -3,6 +3,7 @@
 const Session      = require("../models/session");
 const Auditorium   = require("../models/auditorium");
 const Ticket       = require("../models/ticket");
+const Movie        = require("../models/movie");
 const Helper       = require("../helpers");
 const AppException = require("../exceptions/appException");
 
@@ -18,7 +19,23 @@ const SessionController = {
     let session = new Session();
     session = Object.assign(session, req.body);
 
-    Auditorium.findById(req.body.auditorium_id).exec()
+    let dtStart = new Date(req.body.dt_start);
+    let dtFinish = new Date(dtStart);
+
+    if (! (Helper.isDateValid(dtStart)) ) {
+      throw new AppException("Bad date format, check.", 400);
+    }
+
+    Movie.findById(req.body.movie_id).exec()
+    .then(movie => {
+      if (movie === null) {
+        throw new AppException("Movie not found.", 400);
+      }
+
+      dtFinish.setMinutes(dtStart.getMinutes() + movie.length);
+
+      return Auditorium.findById(req.body.auditorium_id).exec();
+    })
     .then(auditorium => {
       if (auditorium === null) {
         throw new AppException("Auditorium not found.", 400);
@@ -26,10 +43,18 @@ const SessionController = {
       // generate map of seats and their availability status
       let mapOfSeats = {};
       auditorium.seats.forEach((e,i,a) => {
-        mapOfSeats[v] = true;
+        mapOfSeats[e] = true;
       });
 
       session.seats = mapOfSeats;
+      session.dt_finish = dtFinish;
+
+      return Session.find({auditorium_id: auditorium._id, dt_start: {$lte: dtFinish}, dt_finish: {$gte: dtStart} }).exec();
+    })
+    .then(s => {
+      if (s.length) {
+        throw new AppException("Some session already run at this time in provided auditorium.", 400);
+      }
 
       return session.save();
     })

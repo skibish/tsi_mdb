@@ -32,8 +32,7 @@ const SessionSchema = new Schema({
     required: true
   },
   dt_finish: {
-    type: Date,
-    required: true
+    type: Date
   },
   seats: {
     type: Schema.Types.Mixed,
